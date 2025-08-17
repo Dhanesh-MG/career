@@ -1,12 +1,19 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Building2, MapPin, Clock, DollarSign } from "lucide-react"
-import { db } from "@/lib/supabase"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Building2, MapPin, Clock, DollarSign } from "lucide-react";
+import { db } from "@/lib/supabase";
 
 export default async function CareersPage() {
-  const jobs = await db.getJobs("active")
+  const jobs = await db.getJobs("active");
+  console.log(jobs);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -22,10 +29,16 @@ export default async function CareersPage() {
               <Link href="/" className="text-gray-600 hover:text-gray-900">
                 Home
               </Link>
-              <Link href="/#about" className="text-gray-600 hover:text-gray-900">
+              <Link
+                href="/#about"
+                className="text-gray-600 hover:text-gray-900"
+              >
                 About
               </Link>
-              <Link href="/#services" className="text-gray-600 hover:text-gray-900">
+              <Link
+                href="/#services"
+                className="text-gray-600 hover:text-gray-900"
+              >
                 Services
               </Link>
               <Link href="/careers" className="text-blue-600 font-medium">
@@ -41,8 +54,9 @@ export default async function CareersPage() {
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Join Our Team</h1>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Be part of a company that's shaping the future of technology. We offer competitive benefits, flexible work
-            arrangements, and opportunities for growth.
+            Be part of a company that's shaping the future of technology. We
+            offer competitive benefits, flexible work arrangements, and
+            opportunities for growth.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <div className="bg-white/10 rounded-lg p-4">
@@ -50,7 +64,7 @@ export default async function CareersPage() {
               <div className="text-blue-100">Team Members</div>
             </div>
             <div className="bg-white/10 rounded-lg p-4">
-              <div className="text-2xl font-bold">15+</div>
+              <div className="text-2xl font-bold">{jobs.length}+</div>
               <div className="text-blue-100">Open Positions</div>
             </div>
             <div className="bg-white/10 rounded-lg p-4">
@@ -65,21 +79,27 @@ export default async function CareersPage() {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Open Positions</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Open Positions
+            </h2>
             <p className="text-gray-600">
-              Discover exciting opportunities to grow your career with us. We're always looking for talented individuals
-              to join our team.
+              Discover exciting opportunities to grow your career with us. We're
+              always looking for talented individuals to join our team.
             </p>
           </div>
 
           <div className="grid gap-6">
-            {jobs.map((job) => (
+            {jobs?.map((job) => (
               <Card key={job.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                      <CardTitle className="text-xl mb-2">{job.title}</CardTitle>
-                      <CardDescription className="text-base">{job.description}</CardDescription>
+                      <CardTitle className="text-xl mb-2">
+                        {job.title}
+                      </CardTitle>
+                      <CardDescription className="text-base">
+                        {job.description}
+                      </CardDescription>
                     </div>
                     <Button asChild>
                       <Link href={`/careers/${job.id}`}>Apply Now</Link>
@@ -100,10 +120,12 @@ export default async function CareersPage() {
                       <Clock className="h-4 w-4" />
                       {job.type}
                     </div>
-                    <div className="flex items-center gap-1 text-sm text-gray-600">
-                      <DollarSign className="h-4 w-4" />
-                      {job.salary}
-                    </div>
+                    {job.salary && (
+                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                        <DollarSign className="h-4 w-4" />
+                        {job.salary}
+                      </div>
+                    )}
                   </div>
 
                   <div className="mb-4">
@@ -117,7 +139,9 @@ export default async function CareersPage() {
                     </div>
                   </div>
 
-                  <div className="text-sm text-gray-500">Posted {job.posted}</div>
+                  <div className="text-sm text-gray-500">
+                    Posted {new Date(job.created_at).toLocaleDateString()}
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -129,10 +153,12 @@ export default async function CareersPage() {
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Work With Us?</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Why Work With Us?
+            </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              We believe in creating an environment where our team members can thrive both professionally and
-              personally.
+              We believe in creating an environment where our team members can
+              thrive both professionally and personally.
             </p>
           </div>
 
@@ -140,27 +166,33 @@ export default async function CareersPage() {
             {[
               {
                 title: "Competitive Compensation",
-                description: "Market-leading salaries with equity options and performance bonuses",
+                description:
+                  "Market-leading salaries with equity options and performance bonuses",
               },
               {
                 title: "Health & Wellness",
-                description: "Comprehensive health insurance, dental, vision, and wellness programs",
+                description:
+                  "Comprehensive health insurance, dental, vision, and wellness programs",
               },
               {
                 title: "Flexible Work",
-                description: "Remote work options, flexible hours, and work-life balance",
+                description:
+                  "Remote work options, flexible hours, and work-life balance",
               },
               {
                 title: "Learning & Development",
-                description: "Professional development budget, conferences, and training opportunities",
+                description:
+                  "Professional development budget, conferences, and training opportunities",
               },
               {
                 title: "Great Culture",
-                description: "Collaborative environment with team events and social activities",
+                description:
+                  "Collaborative environment with team events and social activities",
               },
               {
                 title: "Career Growth",
-                description: "Clear career paths with mentorship and advancement opportunities",
+                description:
+                  "Clear career paths with mentorship and advancement opportunities",
               },
             ].map((benefit, index) => (
               <Card key={index}>
@@ -176,5 +208,5 @@ export default async function CareersPage() {
         </div>
       </section>
     </div>
-  )
+  );
 }

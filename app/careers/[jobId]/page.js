@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,13 +12,9 @@ import { useToast } from "@/hooks/use-toast"
 import { db } from "@/lib/supabase"
 import { notFound } from "next/navigation"
 
-export default async function JobApplicationPage({ params }: { params: { jobId: string } }) {
-  const job = await db.getJob(params.jobId)
-
-  if (!job) {
-    notFound()
-  }
-
+export default function JobApplicationPage({ params }) {
+  const [job, setJob] = useState(null)
+  const [loading, setLoading] = useState(true)
   const { toast } = useToast()
 
   const [formData, setFormData] = useState({
@@ -34,18 +28,38 @@ export default async function JobApplicationPage({ params }: { params: { jobId: 
     availability: "",
   })
 
-  const [resumeFile, setResumeFile] = useState<File | null>(null)
+  const [resumeFile, setResumeFile] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  useEffect(() => {
+    async function fetchJob() {
+      try {
+        const jobData = await db.getJob(params.jobId)
+        if (jobData) {
+          setJob(jobData)
+        } else {
+          notFound()
+        }
+      } catch (error) {
+        console.error("Error fetching job:", error)
+        notFound()
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchJob()
+  }, [params.jobId])
+
+  const handleInputChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     })
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e) => {
     const file = e.target.files?.[0]
     if (file) {
       // Check file type
@@ -77,7 +91,7 @@ export default async function JobApplicationPage({ params }: { params: { jobId: 
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
 
@@ -112,6 +126,31 @@ export default async function JobApplicationPage({ params }: { params: { jobId: 
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-gray-600">Loading job details...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!job) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Job Not Found</h1>
+          <p className="text-gray-600 mb-4">The job you're looking for doesn't exist.</p>
+          <Button asChild>
+            <Link href="/careers">Back to Careers</Link>
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   if (isSubmitted) {
@@ -209,10 +248,12 @@ export default async function JobApplicationPage({ params }: { params: { jobId: 
                       <Clock className="h-4 w-4" />
                       {job.type}
                     </div>
-                    <div className="flex items-center gap-1 text-sm text-gray-600">
-                      <DollarSign className="h-4 w-4" />
-                      {job.salary}
-                    </div>
+                    {job.salary && (
+                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                        <DollarSign className="h-4 w-4" />
+                        {job.salary}
+                      </div>
+                    )}
                   </div>
                 </CardHeader>
 
@@ -229,7 +270,7 @@ export default async function JobApplicationPage({ params }: { params: { jobId: 
                     </ul>
                   </div>
 
-                  {job.responsibilities && (
+                  {job.responsibilities && job.responsibilities.length > 0 && (
                     <div>
                       <h3 className="font-semibold text-lg mb-3">Responsibilities</h3>
                       <ul className="space-y-2">
@@ -243,7 +284,7 @@ export default async function JobApplicationPage({ params }: { params: { jobId: 
                     </div>
                   )}
 
-                  {job.benefits && (
+                  {job.benefits && job.benefits.length > 0 && (
                     <div>
                       <h3 className="font-semibold text-lg mb-3">Benefits</h3>
                       <ul className="space-y-2">
